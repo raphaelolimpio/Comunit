@@ -1,90 +1,98 @@
-import 'package:dicionario/Config/model/Post_model.dart';
-import 'package:dicionario/DS/Components/searchView/seachView.dart';
 import 'package:flutter/material.dart';
+import '../Config/model/Post_model.dart';
+import '../Service/termo_service.dart';
+import '../Service/favorite_service.dart';
+import '../DS/Components/Card/ListCard/List_card_custom.dart';
+import '../shared/color.dart';
+
 
 class HomeWidget extends StatefulWidget {
-  final void Function(PostModel)? onTermoSelected;
-  const HomeWidget({Key? key, this.onTermoSelected}) : super(key: key);
+  const HomeWidget({super.key});
 
   @override
   State<HomeWidget> createState() => _HomeWidgetState();
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  String _searchTerm = "";
+  late Future<List<TermoCompletoModel>> _termosFuture;
+  final Set<int> _favoritosIds = {};
 
   @override
   void initState() {
     super.initState();
+    _carregarDados();
   }
 
-  void _handleSearchSubmitted(String query) {
+  void _carregarDados({bool forceRefresh = false}) {
     setState(() {
-      _searchTerm = query;
+      _termosFuture = TermoService.listarTermos(forceRefresh: forceRefresh);
     });
-    print("Busca submetida com: $query");
+    _carregarFavoritos();
   }
 
-  void _handleSuggestionSelected(PostModel termo) {
-    setState(() {
-      _searchTerm = "";
-    });
-    widget.onTermoSelected?.call(termo);
-  }
-
-  void _onSearchCleared() {
-    setState(() {
-      _searchTerm = "";
-    });
+  Future<void> _carregarFavoritos() async {
+    final favs = await FavoriteService.getMeusFavoritos();
+    if (mounted) {
+      setState(() {
+        _favoritosIds.clear();
+        _favoritosIds.addAll(favs.map((e) => e.id));
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-           
-            const SizedBox(height:100),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                 Text(
-              "Bem-Vindo ao",
-              style: textTheme.headlineMedium?.copyWith(fontSize: 30),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              "Dicionário do Dev.",
-              style: textTheme.bodySmall?.copyWith(fontSize: 30),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20.0,),
-            
-            Seachview(
-              initialValue: _searchTerm,
-              onSuggestionSelected: _handleSuggestionSelected,
-              onSearchSubmitted: _handleSearchSubmitted,
-              onSearchCleared: _onSearchCleared,
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: appBarColor,
+        elevation: 0.5,
+        title: const Text('Dicionário Dev', style: TextStyle(fontWeight: FontWeight.bold, color: BlackTextColor)),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: primaryColor),
+            onPressed: () => _carregarDados(forceRefresh: true),
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<TermoCompletoModel>>(
+        future: _termosFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: primaryColor));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Erro ao carregar feed: ${snapshot.error}'));
+          }
 
-            ), 
-            const SizedBox(height: 20.0),
-             Text(
-              "Explore o vocabulário do mundo DEV.",
-              style: textTheme.bodyLarge?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-              ],
-            ),
+          final termos = snapshot.data ?? [];
 
-            
-          ],
-        ),
+          return RefreshIndicator(
+            color: primaryColor,
+            onRefresh: () async => _carregarDados(forceRefresh: true),
+            child: ListCard(
+              items: termos,
+              displayMode: CardDisplayMode.verticalList,
+              isFavoritedChecker: (item) => _favoritosIds.contains((item as TermoCompletoModel).id),
+              onFavoriteItem: (item) async {
+                final termo = item as TermoCompletoModel;
+                await FavoriteService.toggleFavorito(tipo: 'termo', itemId: termo.id);
+                _carregarFavoritos();
+              },
+              onLikeItem: (item) async {
+                final termo = item as TermoCompletoModel;
+                if (termo.explicacoes.isNotEmpty) {
+                  await TermoService.likeExplicacao(termo.explicacoes.first.id, termo.id);
+                  _carregarDados(forceRefresh: true);
+                }
+              },
+              onTapItem: (item) {
+                // Ação de clique no card unificada
+              },
+            ),
+          );
+        },
       ),
     );
   }

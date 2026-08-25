@@ -1,145 +1,112 @@
-import 'package:dicionario/Config/cache/cache_topicos/Topico_Cache.dart';
-import 'package:dicionario/Config/model/Post_model.dart';
-import 'package:dicionario/Config/server/Api_service.dart';
-import 'package:dicionario/DS/Components/Icons/Icon_view_Model.dart';
-import 'package:dicionario/Service/Creat_service.dart';
-import 'package:dicionario/Service/topico_sevice.dart';
+import 'package:dicionario/DS/Layout/app_layout_config.dart';
 import 'package:flutter/material.dart';
+import '../Service/Creat_service.dart';
+import '../Service/Validation_service.dart';
+import '../shared/color.dart';
 
 class AddWidget extends StatefulWidget {
-  const AddWidget({Key? key}) : super(key: key);
+  const AddWidget({super.key});
 
   @override
   State<AddWidget> createState() => _AddWidgetState();
 }
 
 class _AddWidgetState extends State<AddWidget> {
-  late Future<ApiResponse<List<String>>> _topicosFuture;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _tituloController = TextEditingController();
+  final TextEditingController _linguagemController = TextEditingController(text: 'dart');
+  final TextEditingController _codigoController = TextEditingController();
+  final TextEditingController _explicacaoController = TextEditingController();
+  
+  bool _isLoading = false;
 
-  Key _formCardKey = UniqueKey();
+  Future<void> _salvarSnippet() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  void initState() {
-    super.initState();
-    if (TopicoCache.topicos == null) {
-      _topicosFuture = TopicoSevice.getAllTopico().then((res) {
-        TopicoCache.topicos = res.data;
-        return res;
-      });
-    } else {
-      _topicosFuture = Future.value(
-        ApiResponse(statusCode: 200, data: TopicoCache.topicos),
-      );
-    }
-  }
+    setState(() => _isLoading = true);
 
-  Future<void> _handleSave(PostModel postData) async {
-    try {
-      final response = await CreatService.createTermo(postData);
+    final sucesso = await CreateService.criarSnippet(
+      titulo: _tituloController.text.trim(),
+      linguagem: _linguagemController.text.trim(),
+      codigo: _codigoController.text.trim(),
+      explicacao: _explicacaoController.text.trim(),
+    );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      if (sucesso) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Termo "${response.data?.nome}" salvo com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Snippet criado com sucesso!')),
         );
-        setState(() {
-          _formCardKey = UniqueKey();
-        });
+        _formKey.currentState!.reset();
+        _tituloController.clear();
+        _codigoController.clear();
+        _explicacaoController.clear();
       } else {
-        throw Exception('Falha ao salvar: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao criar snippet. Tente novamente.')),
+        );
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao salvar o termo: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final globalTheme = Theme.of(context);
-    if (TopicoCache.topicos != null) {
-      return _buildContent(globalTheme, TopicoCache.topicos!);
-    }
-    return FutureBuilder<ApiResponse<List<String>>>(
-      future: _topicosFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError ||
-            !snapshot.hasData ||
-            snapshot.data!.data == null) {
-          return Center(
-            child: Text(
-              "Erro ao carregar os tópico. \n${snapshot.error}",
-              textAlign: TextAlign.center,
-            ),
-          );
-        }
-        final topicos = snapshot.data!.data!;
-        return _buildContent(globalTheme, topicos);
-      },
-    );
-  }
-
-  Widget _buildContent(ThemeData globalTheme, List<String> topicos) {
-    if (topicos.isEmpty) {
-      return const Center(child: Text("Nenhum tópico encontrado"));
-    }
-    return Theme(
-      data: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: globalTheme.scaffoldBackgroundColor,
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: appBarColor,
+        elevation: 0.5,
+        title: const Text('Criar Publicação', style: TextStyle(fontWeight: FontWeight.bold, color: BlackTextColor)),
       ),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CardCustom4(
-            key: _formCardKey,
-            topicos: topicos,
-            dropdownBackgroundColor: globalTheme.scaffoldBackgroundColor,
-            dropdownTextStyle: globalTheme.textTheme.bodyMedium,
-            viewModel: CardCustom4ViewModel(
-              buttonText: 'Adicionar Novo Termo',
-              initialData: null,
-              onSave: _handleSave,
-              topicoIcon: IconViewModel(
-                icon: IconType.fixed,
-                color: colorType.darkblue,
-                size: IconSize.medium,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _tituloController,
+                decoration: const InputDecoration(labelText: 'Título do Snippet'),
+                validator: ValidationService.validarTitulo,
               ),
-              categorIcon: IconViewModel(
-                icon: IconType.folder,
-                color: colorType.yellow,
-                size: IconSize.medium,
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _linguagemController,
+                decoration: const InputDecoration(labelText: 'Linguagem (ex: dart, python, js)'),
               ),
-              definicaoIcon: IconViewModel(
-                icon: IconType.definition,
-                color: colorType.pink,
-                size: IconSize.medium,
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _explicacaoController,
+                decoration: const InputDecoration(labelText: 'Explicação curta'),
+                maxLines: 2,
+                validator: ValidationService.validarConteudo,
               ),
-              comandoExemploIcon: IconViewModel(
-                icon: IconType.bash,
-                color: colorType.green,
-                size: IconSize.medium,
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _codigoController,
+                decoration: const InputDecoration(
+                  labelText: 'Código-fonte',
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 6,
+                style: const TextStyle(fontFamily: 'monospace'),
+                validator: ValidationService.validarCodigo,
               ),
-              explicacaoPraticaIcon: IconViewModel(
-                icon: IconType.dialog,
-                color: colorType.cyan,
-                size: IconSize.medium,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(borderRadius: AppLayoutConfig.borderRadius),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: _isLoading ? null : _salvarSnippet,
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: WhiteTextColor)
+                    : const Text('Publicar Snippet', style: TextStyle(color: WhiteTextColor, fontWeight: FontWeight.bold)),
               ),
-              dicasDeUsoIcon: IconViewModel(
-                icon: IconType.dica,
-                color: colorType.orange,
-                size: IconSize.medium,
-              ),
-            ),
+            ],
           ),
         ),
       ),

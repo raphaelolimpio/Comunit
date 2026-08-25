@@ -2,7 +2,7 @@ import 'package:dicionario/DS/Components/bash/code_block_widget.dart';
 import 'package:flutter/material.dart';
 import '../Config/model/Post_model.dart';
 import '../Service/termo_service.dart';
-
+import '../shared/color.dart';
 
 class DetailWidget extends StatefulWidget {
   final int termoId;
@@ -38,10 +38,17 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Detalhes do Termo'),
+        backgroundColor: appBarColor,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: BlackTextColor),
+        title: const Text('Detalhes do Termo', style: TextStyle(color: BlackTextColor, fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: primaryColor,
+          unselectedLabelColor: iconInAtivoDark,
+          indicatorColor: primaryColor,
           tabs: const [
             Tab(icon: Icon(Icons.menu_book), text: 'Entendimentos'),
             Tab(icon: Icon(Icons.code), text: 'Snippets & Funções'),
@@ -52,7 +59,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
         future: _termoFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: primaryColor));
           }
           if (snapshot.hasError || snapshot.data == null) {
             return Center(child: Text('Erro ao carregar detalhes: ${snapshot.error}'));
@@ -63,13 +70,15 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
           return TabBarView(
             controller: _tabController,
             children: [
-              // Aba 1: Explicações da Comunidade
               ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text(termo.titulo, style: Theme.of(context).textTheme.headlineMedium),
+                  Text(termo.titulo, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Chip(label: Text(termo.categoria)),
+                  Chip(
+                    backgroundColor: primaryColor.withOpacity(0.1),
+                    label: Text(termo.categoria, style: const TextStyle(color: primaryColor)),
+                  ),
                   const SizedBox(height: 16),
                   const Text('Visões e Entendimentos:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
@@ -80,6 +89,8 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                     ),
                   ...termo.explicacoes.map((exp) => Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
+                    elevation: 0.5,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
@@ -98,7 +109,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.thumb_up_alt_outlined, size: 18),
+                                icon: const Icon(Icons.thumb_up_alt_outlined, size: 18, color: primaryColor),
                                 onPressed: () async {
                                   bool sucesso = await TermoService.likeExplicacao(exp.id, termo.id);
                                   if (sucesso) {
@@ -115,7 +126,6 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                   )),
                 ],
               ),
-              // Aba 2: Snippets Práticos
               ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -126,6 +136,8 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                     ),
                   ...termo.snippets.map((snip) => Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 0.5,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
@@ -146,13 +158,6 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Aqui você pode abrir um BottomSheet para adicionar nova explicação ou snippet chamando CreateService
-        },
-        icon: const Icon(Icons.add_comment),
-        label: const Text('Contribuir'),
       ),
     );
   }

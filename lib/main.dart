@@ -1,6 +1,4 @@
 import 'package:dicionario/DS/Components/theme/Theme_Service.dart';
-import 'package:dicionario/Service/favorite_service.dart';
-import 'package:dicionario/Service/termo_service.dart';
 import 'package:dicionario/Splash_Screen/Splash_Screen.dart';
 import 'package:dicionario/shared/color.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +11,8 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => FavoriteService()),
+        // Apenas o ThemeService precisa ser um ChangeNotifierProvider
         ChangeNotifierProvider(create: (context) => ThemeService()),
-        ChangeNotifierProvider(create: (context) => TermoService()),
       ],
       child: const MyApp(),
     ),
@@ -51,7 +48,7 @@ class MyApp extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                borderSide: BorderSide(width: 2),
+                borderSide: const BorderSide(width: 2),
               ),
             ),
             appBarTheme: const AppBarTheme(
@@ -91,7 +88,6 @@ class MyApp extends StatelessWidget {
             primaryColor: iconAtivoDark,
             scaffoldBackgroundColor: backGroudDarkColor,
             primaryColorDark: WhiteTextColor.withOpacity(0.8),
-
             appBarTheme: const AppBarTheme(
               backgroundColor: icondarkNuttonNavigation,
               surfaceTintColor: Colors.transparent,
@@ -111,7 +107,6 @@ class MyApp extends StatelessWidget {
               labelStyle: TextStyle(color: Colors.grey[400]),
               hintStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
-
               fillColor: Colors.white.withOpacity(0.05),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -123,18 +118,17 @@ class MyApp extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
-
                 borderSide: BorderSide(color: iconAtivoDark, width: 2),
               ),
             ),
-            textTheme: const TextTheme(
-              titleMedium: TextStyle(color: Colors.white),
-              headlineMedium: TextStyle(
+            textTheme: TextTheme(
+              titleMedium: const TextStyle(color: Colors.white),
+              headlineMedium: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
-              bodyMedium: TextStyle(color: Color(0xffA0A0A0), height: 1.4),
-              bodyLarge: TextStyle(
+              bodyMedium: const TextStyle(color: Color(0xffA0A0A0), height: 1.4),
+              bodyLarge: const TextStyle(
                 color: Color(0xffB0B3C0),
                 fontStyle: FontStyle.italic,
               ),
