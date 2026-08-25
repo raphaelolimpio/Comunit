@@ -1,134 +1,155 @@
-import 'package:dicionario/DS/Components/Button/Favorite/Favorite_toggle_button.dart';
-import 'package:dicionario/DS/Components/Card/model/card_custom/Card_custom_view_model.dart';
-import 'package:dicionario/DS/Components/IconText/Icon_Text.dart';
-import 'package:dicionario/DS/Components/bash/Code_Block.dart';
-import 'package:dicionario/shared/color.dart';
 import 'package:flutter/material.dart';
+import '../../../../../Config/model/Post_model.dart';
 
-class CardCustom extends StatefulWidget {
-  final CardCustomViewModel viewModel;
-  final double? cardWidth;
+class CardTermoCustom extends StatelessWidget {
+  final TermoCompletoModel termo;
+  final VoidCallback onTap;
+  final VoidCallback? onFavoriteToggle;
+  final bool isFavorite;
 
-  const CardCustom({super.key, required this.viewModel, this.cardWidth});
-
-  @override
-  State<CardCustom> createState() => _CardCustomState();
-}
-
-class _CardCustomState extends State<CardCustom> {
-
-
-  
-  @override
-  void initState() {
-    super.initState();
-    _checkFavoriteStatus();
-  }
-
-  void _checkFavoriteStatus() {
-    setState(() {
-    });
-  }
+  const CardTermoCustom({
+    Key? key,
+    required this.termo,
+    required this.onTap,
+    this.onFavoriteToggle,
+    this.isFavorite = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: SizedBox(
-        width: widget.cardWidth,
-        child: Container(
-          padding: const EdgeInsets.all(15.0),
-          decoration: BoxDecoration(
-            color: WhiteTextColor,
-            border: Border.all(color: theme.dividerColor),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor.withOpacity(0.08),
-                spreadRadius: 0,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    final primeiraExplicacao = termo.explicacoes.isNotEmpty 
+        ? termo.explicacoes.first.conteudo 
+        : 'Nenhuma explicação adicionada ainda. Seja o primeiro dev a explicar!';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: IconTextRow(
-                      iconModel: widget.viewModel.topicoIcon,
-                      label: "",
-                      text: widget.viewModel.topico,
-                      style: TextStyle(
-                        color: theme.shadowColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0,
+        ],
+        border: Border.all(
+          color: theme.dividerColor.withOpacity(0.08),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Topo: Categoria + Botão Favorito
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.primaryColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        termo.categoria.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: theme.primaryColor,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  FavoriteToggleButton(
-                    itemId: widget.viewModel.id,
-                    itemModel: widget.viewModel.toPostModel(),
-                  ),
-                ],
-              ),
-              const Divider(height: 10),
-              IconTextRow(
-                iconModel: widget.viewModel.categorIcon,
-                label: "Categoria: ",
-                text: widget.viewModel.nome,
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 16.0,
-                ),
-              ),
-
-              IconTextRow(
-                iconModel: widget.viewModel.definicaoIcon,
-                label: "Definição: ",
-                text: widget.viewModel.definicao,
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 16.0,
-                ),
-              ),
-              IconTextRow(
-                iconModel: widget.viewModel.comandoExemploIcon,
-                label: "Comando Exemplo: ",
-                text: "",
-                
-              ),
-
-              CodeBlock(code: widget.viewModel.comando_exemplo),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(theme.primaryColor),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                    if (onFavoriteToggle != null)
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          isFavorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                          color: isFavorite ? theme.primaryColor : Colors.grey,
+                          size: 22,
+                        ),
+                        onPressed: onFavoriteToggle,
                       ),
-                    ),
-                  ),
-                  onPressed: () => widget.viewModel.onButtonPressed(context),
-                  child: Text(widget.viewModel.buttonText, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),),
-                  
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+
+                // Título do Termo
+                Text(
+                  termo.titulo,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Preview da Explicação
+                Text(
+                  primeiraExplicacao,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.75),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Rodapé com Métricas (Explicações e Snippets)
+                Row(
+                  children: [
+                    _buildMetricBadge(
+                      context,
+                      icon: Icons.forum_outlined,
+                      label: '${termo.explicacoes.length} visões',
+                    ),
+                    const SizedBox(width: 14),
+                    _buildMetricBadge(
+                      context,
+                      icon: Icons.code_rounded,
+                      label: '${termo.snippets.length} snippets',
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: theme.hintColor,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMetricBadge(BuildContext context, {required IconData icon, required String label}) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: theme.hintColor),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: theme.hintColor,
+          ),
+        ),
+      ],
     );
   }
 }

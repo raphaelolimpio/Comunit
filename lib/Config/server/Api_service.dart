@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Api/Api.dart';
 
 enum HttpVerb { get, post, put, delete, patch }
 
@@ -16,13 +16,6 @@ class ApiResponse<T> {
 }
 
 class ApiService {
-
-  static String get baseUrl {
-    if (kIsWeb) return 'http://localhost:8000';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000';
-    return 'http://localhost:8000'; 
-  }
-
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('access_token');
@@ -46,7 +39,7 @@ class ApiService {
     required T Function(dynamic json) fromJson,
   }) async {
     final token = await getToken();
-    final url = endpoint.startsWith('http') ? endpoint : '$baseUrl$endpoint';
+    final url = endpoint.startsWith('http') ? endpoint : '${AppApi.baseUrl}$endpoint';
 
     final defaultHeaders = {
       'Content-Type': 'application/json',

@@ -1,53 +1,46 @@
+class CacheEntry<T> {
+  final T data;
+  final DateTime expiresAt;
 
-import 'package:dicionario/Config/cache/cache_termos/cache_entry.dart';
-import 'package:dicionario/Config/model/Post_model.dart';
+  CacheEntry({required this.data, required this.expiresAt});
 
-class TermosCache{
-  static final Map<String, CacheEntry> _cache = {};
-  static const String _topicosKey = 'all_topicos';
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+}
 
-  static String _getTermosKey(String? topicos, String? nome){
-    final topicoKey = topicos ?? 'all';
-    final nomeKey = nome ?? 'all';
-    return 'termos-$topicoKey-$nomeKey';  
-    }
+class MemoryCacheService {
+  static final MemoryCacheService _instance = MemoryCacheService._internal();
+  factory MemoryCacheService() => _instance;
+  MemoryCacheService._internal();
 
-    static void saveTopicos(List<String> topicos) {
-      _cache[_topicosKey] = CacheEntry(topicos, DateTime.now());
-      print("Cache: Topicos salvos");
-    }
+  final Map<String, CacheEntry<dynamic>> _cache = {};
 
-    static List<String>? getTopicos(){
-      final entry = _cache[_topicosKey];
-      if(entry == null) return null;
-
-      if(entry.isExpired){
-        print("Cache: Topicos expirados.");
-        _cache.remove(_topicosKey);
-        return null;
-      }
-      print("Cache: Tópicos lidos");
-      return entry.data as List<String>;
-    }
-
-  static void saveTermos(
-    String? topicos, String? nome, List<PostModel> termos
-  ){
-    final key = _getTermosKey(topicos, nome);
-    _cache[key] = CacheEntry(termos, DateTime.now());
-    print("Cache: Termos salvos para a chave '$key'.");
+  void set<T>(String key, T data, {Duration duration = const Duration(minutes: 5)}) {
+    _cache[key] = CacheEntry<T>(
+      data: data,
+      expiresAt: DateTime.now().add(duration),
+    );
   }
 
-  static List<PostModel>? getTermos(String? topico, String? nome){
-    final key = _getTermosKey(topico, nome);
+  T? get<T>(String key) {
     final entry = _cache[key];
-    if(entry == null) return null;
-    if(entry.isExpired){
-      print("Cache: Termos para a chave '$key' expiraram.");
+    if (entry == null) return null;
+
+    if (entry.isExpired) {
       _cache.remove(key);
       return null;
     }
-    print("Cache: Termos lidos da chave '$key'.");
-    return entry.data as List<PostModel>;
+    return entry.data as T?;
+  }
+
+  void invalidate(String key) {
+    _cache.remove(key);
+  }
+
+  void invalidatePrefix(String prefix) {
+    _cache.removeWhere((key, _) => key.startsWith(prefix));
+  }
+
+  void clear() {
+    _cache.clear();
   }
 }

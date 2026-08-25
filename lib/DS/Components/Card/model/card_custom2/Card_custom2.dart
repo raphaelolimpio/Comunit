@@ -1,128 +1,93 @@
-import 'package:dicionario/DS/Components/Button/Favorite/Favorite_toggle_button.dart';
-import 'package:dicionario/DS/Components/Card/model/card_custom2/Card_custom2_view_model.dart';
-import 'package:dicionario/DS/Components/IconText/Icon_Text.dart';
-import 'package:dicionario/DS/Components/bash/Code_Block.dart';
-import 'package:dicionario/shared/color.dart';
 import 'package:flutter/material.dart';
+import '../../../../../Config/model/Post_model.dart';
 
-class CardCustom2 extends StatefulWidget {
-  final CardCustom2ViewModel viewModel;
-  final double? cardWidth;
+class CardExplicacaoWidget extends StatelessWidget {
+  final ExplicacaoModel explicacao;
+  final VoidCallback onLike;
 
-  const CardCustom2({super.key, required this.viewModel, this.cardWidth});
+  const CardExplicacaoWidget({
+    Key? key,
+    required this.explicacao,
+    required this.onLike,
+  }) : super(key: key);
 
-  @override
-  State<CardCustom2> createState() => _CardCustom2State();
-}
-
-class _CardCustom2State extends State<CardCustom2> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: SizedBox(
-        width: widget.cardWidth,
-        child: Container(
-          padding: const EdgeInsets.all(15.0),
-          decoration: BoxDecoration(
-            color: WhiteTextColor,
-            border: Border.all(color: theme.dividerColor),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: theme.shadowColor.withOpacity(0.08),
-                spreadRadius: 0,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Autor e Nível (Iniciante, Pleno, Avançado)
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              CircleAvatar(
+                radius: 16,
+                backgroundImage: explicacao.autorFoto != null 
+                    ? NetworkImage(explicacao.autorFoto!) 
+                    : null,
+                child: explicacao.autorFoto == null 
+                    ? Text(explicacao.autorNome[0].toUpperCase()) 
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: IconTextRow(
-                      iconModel: widget.viewModel.topicoIcon,
-                      label: "",
-                      text: widget.viewModel.topico,
-                      style: TextStyle(
-                        color: theme.shadowColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22.0,
-                      ),
-                    ),
+                  Text(
+                    explicacao.autorNome,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
-                  FavoriteToggleButton(
-                    itemId: widget.viewModel.id,
-                    itemModel: widget.viewModel.toPostModel(),
+                  Text(
+                    explicacao.nivel,
+                    style: TextStyle(color: theme.primaryColor, fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
-              const Divider(height: 20),
-              const SizedBox(height: 10),
-              IconTextRow(
-                iconModel: widget.viewModel.categorIcon,
-                label: "Categoria: ",
-                text: widget.viewModel.nome,
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 20.0,
+              const Spacer(),
+              // Botão de Upvote / Curtir
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: onLike,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.thumb_up_alt_outlined, size: 14, color: theme.primaryColor),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${explicacao.upvotes}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                maxLines: 10,
-              ),
-              const SizedBox(height: 10),
-              IconTextRow(
-                iconModel: widget.viewModel.definicaoIcon,
-                label: "Definição: ",
-                text: widget.viewModel.definicao,
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 20.0,
-                ),
-                maxLines: 50,
-              ),
-              const SizedBox(height: 10),
-              IconTextRow(
-                iconModel: widget.viewModel.comandoExemploIcon,
-                label: "Comando Exemplo: ",
-                text: "",
-              ),
-              CodeBlock(code: widget.viewModel.comando_exemplo),
-              const SizedBox(height: 20),
-              IconTextRow(
-                iconModel: widget.viewModel.explicacaoPraticaIcon,
-                label: "Explicação Pratica: ",
-                text: widget.viewModel.explicacao_pratica,
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 20.0,
-                ),
-                maxLines: 50,
-              ),
-              const SizedBox(height: 10),
-              IconTextRow(
-                iconModel: widget.viewModel.dicasDeUsoIcon,
-                label: "Dicas de Uso: ",
-                text: widget.viewModel.dicas_de_uso ?? "",
-                style: TextStyle(
-                  color: BlackTextColor,
-                  fontFamily: 'Roboto',
-                  fontSize: 20.0,
-                ),
-                maxLines: 50,
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 10),
+          // Texto da Explicação
+          Text(
+            explicacao.conteudo,
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+          ),
+        ],
       ),
     );
   }
