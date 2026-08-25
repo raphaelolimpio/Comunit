@@ -40,25 +40,26 @@ class _TermoWidgetState extends State<TermoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: techBackground,
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0.5,
+        backgroundColor: techSurface,
+        elevation: 0,
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: techBackground,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: techBorderColor),
           ),
           child: TextField(
             controller: _searchController,
+            style: const TextStyle(color: techTextWhite),
             decoration: const InputDecoration(
               hintText: 'Pesquisar termo ou conceito...',
+              hintStyle: TextStyle(color: techTextGray),
               border: InputBorder.none,
-              icon: Icon(Icons.search, color: Colors.grey),
+              icon: Icon(Icons.search, color: techTextGray),
             ),
             onSubmitted: _buscarTermos,
           ),
@@ -84,11 +85,12 @@ class _TermoWidgetState extends State<TermoWidget> {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ChoiceChip(
+                        backgroundColor: techSurface,
+                        selectedColor: techPrimary.withOpacity(0.2),
                         label: Text('${t.nome} (${t.totalTermos})'),
                         selected: isSelected,
-                        selectedColor: primaryColor.withOpacity(0.2),
                         labelStyle: TextStyle(
-                          color: isSelected ? primaryColor : BlackTextColor,
+                          color: isSelected ? techPrimary : techTextWhite,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                         onSelected: (_) => _selecionarTopico(t.nome),
@@ -99,20 +101,20 @@ class _TermoWidgetState extends State<TermoWidget> {
               },
             ),
           ),
-          const Divider(height: 1),
+          const Divider(height: 1, color: techBorderColor),
           Expanded(
             child: _termosFiltradosFuture == null
-                ? Center(
+                ? const Center(
                     child: Text(
                       'Busque por um termo ou selecione um tópico acima.',
-                      style: TextStyle(color: theme.hintColor),
+                      style: TextStyle(color: techTextGray),
                     ),
                   )
                 : FutureBuilder<List<TermoCompletoModel>>(
                     future: _termosFiltradosFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: primaryColor));
+                        return const Center(child: CircularProgressIndicator(color: techPrimary));
                       }
                       final termos = snapshot.data ?? [];
                       return ListCard(items: termos, displayMode: CardDisplayMode.verticalList);

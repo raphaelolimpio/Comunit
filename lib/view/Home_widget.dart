@@ -1,10 +1,11 @@
+import 'package:dicionario/DS/Components/Button/Notification_Animated_Button/Notification_Animated_Button.dart';
 import 'package:flutter/material.dart';
 import '../Config/model/Post_model.dart';
 import '../Service/termo_service.dart';
 import '../Service/favorite_service.dart';
 import '../DS/Components/Card/ListCard/List_card_custom.dart';
+import '../view/Add_widget.dart';
 import '../shared/color.dart';
-
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -43,16 +44,34 @@ class _HomeWidgetState extends State<HomeWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: techBackground,
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0.5,
-        title: const Text('Dicionário Dev', style: TextStyle(fontWeight: FontWeight.bold, color: BlackTextColor)),
-        centerTitle: false,
+        backgroundColor: techSurface,
+        elevation: 0,
+        // Botão de adicionar no canto esquerdo (seguindo o padrão da ProfilePage)[cite: 7]
+        leading: IconButton(
+          icon: const Icon(Icons.add_box_outlined, color: techTextWhite),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddWidget()),
+            );
+          },
+        ),
+        // Nome do app centralizado
+        title: const Text(
+          '// Dicionário_Dev',
+          style: TextStyle(fontWeight: FontWeight.bold, color: techTextWhite, fontFamily: 'monospace'),
+        ),
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: primaryColor),
-            onPressed: () => _carregarDados(forceRefresh: true),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Center(
+              child: NotificationAnimatedButton(
+                unreadEmojis: ['❤️', '💬', '➕'],
+              ),
+            ),
           ),
         ],
       ),
@@ -60,36 +79,46 @@ class _HomeWidgetState extends State<HomeWidget> {
         future: _termosFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: primaryColor));
+            return const Center(
+              child: CircularProgressIndicator(color: techPrimary),
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Erro ao carregar feed: ${snapshot.error}'));
+            return Center(
+              child: Text('Erro ao carregar feed: ${snapshot.error}', style: const TextStyle(color: techTextWhite)),
+            );
           }
 
           final termos = snapshot.data ?? [];
 
           return RefreshIndicator(
-            color: primaryColor,
+            color: techPrimary,
+            backgroundColor: techSurface,
             onRefresh: () async => _carregarDados(forceRefresh: true),
             child: ListCard(
               items: termos,
               displayMode: CardDisplayMode.verticalList,
-              isFavoritedChecker: (item) => _favoritosIds.contains((item as TermoCompletoModel).id),
+              isFavoritedChecker: (item) =>
+                  _favoritosIds.contains((item as TermoCompletoModel).id),
               onFavoriteItem: (item) async {
                 final termo = item as TermoCompletoModel;
-                await FavoriteService.toggleFavorito(tipo: 'termo', itemId: termo.id);
+                await FavoriteService.toggleFavorito(
+                  tipo: 'termo',
+                  itemId: termo.id,
+                );
                 _carregarFavoritos();
               },
               onLikeItem: (item) async {
                 final termo = item as TermoCompletoModel;
                 if (termo.explicacoes.isNotEmpty) {
-                  await TermoService.likeExplicacao(termo.explicacoes.first.id, termo.id);
+                  await TermoService.likeExplicacao(
+                    termo.explicacoes.first.id,
+                    termo.id,
+                  );
                   _carregarDados(forceRefresh: true);
                 }
               },
-              onTapItem: (item) {
-                // Ação de clique no card unificada
-              },
+              onTapItem: (item) {},
             ),
           );
         },

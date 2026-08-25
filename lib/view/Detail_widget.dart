@@ -38,17 +38,17 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: techBackground,
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0.5,
-        iconTheme: const IconThemeData(color: BlackTextColor),
-        title: const Text('Detalhes do Termo', style: TextStyle(color: BlackTextColor, fontWeight: FontWeight.bold)),
+        backgroundColor: techSurface,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: techTextWhite),
+        title: const Text('Detalhes do Termo', style: TextStyle(color: techTextWhite, fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: primaryColor,
-          unselectedLabelColor: iconInAtivoDark,
-          indicatorColor: primaryColor,
+          labelColor: techPrimary,
+          unselectedLabelColor: techTextGray,
+          indicatorColor: techPrimary,
           tabs: const [
             Tab(icon: Icon(Icons.menu_book), text: 'Entendimentos'),
             Tab(icon: Icon(Icons.code), text: 'Snippets & Funções'),
@@ -59,10 +59,10 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
         future: _termoFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: primaryColor));
+            return const Center(child: CircularProgressIndicator(color: techPrimary));
           }
           if (snapshot.hasError || snapshot.data == null) {
-            return Center(child: Text('Erro ao carregar detalhes: ${snapshot.error}'));
+            return Center(child: Text('Erro ao carregar detalhes: ${snapshot.error}', style: const TextStyle(color: techTextWhite)));
           }
 
           final termo = snapshot.data!;
@@ -73,24 +73,39 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
               ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text(termo.titulo, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    termo.titulo,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: techTextWhite,
+                        ),
+                  ),
                   const SizedBox(height: 8),
                   Chip(
-                    backgroundColor: primaryColor.withOpacity(0.1),
-                    label: Text(termo.categoria, style: const TextStyle(color: primaryColor)),
+                    backgroundColor: techPrimary.withOpacity(0.2),
+                    label: Text(termo.categoria, style: const TextStyle(color: techPrimary)),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Visões e Entendimentos:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Visões e Entendimentos:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: techTextWhite),
+                  ),
                   const SizedBox(height: 8),
                   if (termo.explicacoes.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 20),
-                      child: Center(child: Text('Nenhuma explicação cadastrada ainda.')),
+                      child: Center(
+                        child: Text('Nenhuma explicação cadastrada ainda.', style: TextStyle(color: techTextGray)),
+                      ),
                     ),
                   ...termo.explicacoes.map((exp) => Card(
+                    color: techSurface,
                     margin: const EdgeInsets.symmetric(vertical: 6),
-                    elevation: 0.5,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: techBorderColor),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
@@ -99,17 +114,20 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(exp.autorNome, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              Chip(label: Text(exp.nivel, style: const TextStyle(fontSize: 10))),
+                              Text(exp.autorNome, style: const TextStyle(fontWeight: FontWeight.bold, color: techTextWhite)),
+                              Chip(
+                                backgroundColor: techBackground,
+                                label: Text(exp.nivel, style: const TextStyle(fontSize: 10, color: techTextGray)),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
-                          Text(exp.conteudo),
+                          Text(exp.conteudo, style: const TextStyle(color: techTextWhite)),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.thumb_up_alt_outlined, size: 18, color: primaryColor),
+                                icon: const Icon(Icons.thumb_up_alt_outlined, size: 18, color: techPrimary),
                                 onPressed: () async {
                                   bool sucesso = await TermoService.likeExplicacao(exp.id, termo.id);
                                   if (sucesso) {
@@ -117,7 +135,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                                   }
                                 },
                               ),
-                              Text('${exp.upvotes}'),
+                              Text('${exp.upvotes}', style: const TextStyle(color: techTextWhite)),
                             ],
                           )
                         ],
@@ -132,23 +150,29 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                   if (termo.snippets.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(top: 20),
-                      child: Center(child: Text('Nenhum snippet cadastrado ainda.')),
+                      child: Center(
+                        child: Text('Nenhum snippet cadastrado ainda.', style: TextStyle(color: techTextGray)),
+                      ),
                     ),
                   ...termo.snippets.map((snip) => Card(
+                    color: techSurface,
                     margin: const EdgeInsets.symmetric(vertical: 8),
-                    elevation: 0.5,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: techBorderColor),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(snip.titulo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          Text('Por: ${snip.autorNome}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text(snip.titulo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: techTextWhite)),
+                          Text('Por: ${snip.autorNome}', style: const TextStyle(color: techTextGray, fontSize: 12)),
                           const SizedBox(height: 8),
                           CodeBlockWidget(code: snip.codigo, linguagem: snip.linguagem),
                           const SizedBox(height: 8),
-                          Text(snip.explicacao, style: const TextStyle(fontStyle: FontStyle.italic)),
+                          Text(snip.explicacao, style: const TextStyle(fontStyle: FontStyle.italic, color: techTextGray)),
                         ],
                       ),
                     ),

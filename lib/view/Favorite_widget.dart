@@ -29,23 +29,24 @@ class _FavorictWidgetState extends State<FavorictWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: techBackground,
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0.5,
-        title: const Text('Meus Favoritos', style: TextStyle(fontWeight: FontWeight.bold, color: BlackTextColor)),
+        backgroundColor: techSurface,
+        elevation: 0,
+        title: const Text('Meus Favoritos', style: TextStyle(fontWeight: FontWeight.bold, color: techTextWhite)),
       ),
       body: FutureBuilder<List<TermoCompletoModel>>(
         future: _favoritosFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: primaryColor));
+            return const Center(child: CircularProgressIndicator(color: techPrimary));
           }
 
           final favoritos = snapshot.data ?? [];
 
           return RefreshIndicator(
-            color: primaryColor,
+            color: techPrimary,
+            backgroundColor: techSurface,
             onRefresh: () async => _carregarFavoritos(forceRefresh: true),
             child: ListCard(
               items: favoritos,

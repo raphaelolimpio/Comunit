@@ -13,6 +13,16 @@ const slpachColor = Color(0xff4c6fe3);
 
 const boardLigth = Color.fromARGB(255, 22, 2, 2);
 
+const techBackground = Color(0xFF0D1117);      // Fundo escuro padrão GitHub/Terminal
+const techSurface = Color(0xFF161B22);         // Superfície de Cards/Containers
+const techPrimary = Color(0xFF00FF66);         // Verde Matrix / Neon (Destaques)
+const techSecondary = Color(0xFF38BDF8);       // Azul Ciano Tecnológico
+const techAccent = Color(0xFF8B5CF6);          // Roxo Neon
+const techTextWhite = Color(0xFFF0F6FC);       // Texto principal claro
+const techTextGray = Color(0xFF8B949E);        // Texto secundário/cinza tech
+const techBorderColor = Color(0xFF30363D);     // Bordas sutis
+const techRedAlert = Color(0xFFFF5555);
+
 //theme dark
 const icondarkNuttonNavigation = Color(0xFF1F1F1F);
 const iconInAtivoDark= Color(0xFF6E7D8B);

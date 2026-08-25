@@ -54,11 +54,12 @@ class _AddWidgetState extends State<AddWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: techBackground,
       appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0.5,
-        title: const Text('Criar Publicação', style: TextStyle(fontWeight: FontWeight.bold, color: BlackTextColor)),
+        backgroundColor: techSurface,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: techTextWhite),
+        title: const Text('Criar Publicação', style: TextStyle(fontWeight: FontWeight.bold, color: techTextWhite)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -68,43 +69,64 @@ class _AddWidgetState extends State<AddWidget> {
             children: [
               TextFormField(
                 controller: _tituloController,
-                decoration: const InputDecoration(labelText: 'Título do Snippet'),
+                style: const TextStyle(color: techTextWhite),
+                decoration: const InputDecoration(
+                  labelText: 'Título do Snippet',
+                  labelStyle: TextStyle(color: techTextGray),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
+                ),
                 validator: ValidationService.validarTitulo,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _linguagemController,
-                decoration: const InputDecoration(labelText: 'Linguagem (ex: dart, python, js)'),
+                style: const TextStyle(color: techTextWhite),
+                decoration: const InputDecoration(
+                  labelText: 'Linguagem (ex: dart, python, js)',
+                  labelStyle: TextStyle(color: techTextGray),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _explicacaoController,
-                decoration: const InputDecoration(labelText: 'Explicação curta'),
+                style: const TextStyle(color: techTextWhite),
+                decoration: const InputDecoration(
+                  labelText: 'Explicação curta',
+                  labelStyle: TextStyle(color: techTextGray),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
+                ),
                 maxLines: 2,
                 validator: ValidationService.validarConteudo,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _codigoController,
+                style: const TextStyle(fontFamily: 'monospace', color: techTextWhite),
                 decoration: const InputDecoration(
                   labelText: 'Código-fonte',
+                  labelStyle: TextStyle(color: techTextGray),
                   alignLabelWithHint: true,
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
                 ),
                 maxLines: 6,
-                style: const TextStyle(fontFamily: 'monospace'),
                 validator: ValidationService.validarCodigo,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor: techPrimary,
                   shape: RoundedRectangleBorder(borderRadius: AppLayoutConfig.borderRadius),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: _isLoading ? null : _salvarSnippet,
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: WhiteTextColor)
-                    : const Text('Publicar Snippet', style: TextStyle(color: WhiteTextColor, fontWeight: FontWeight.bold)),
+                    ? const CircularProgressIndicator(color: techBackground)
+                    : const Text('Publicar Snippet', style: TextStyle(color: techBackground, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

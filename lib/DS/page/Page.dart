@@ -1,11 +1,11 @@
+import 'package:dicionario/DS/Components/Button/ButtonNavigation/Button_navigation_bar.dart';
+import 'package:dicionario/DS/page/ProfilePage.dart';
+import 'package:dicionario/DS/page/chat_home_screen.dart';
 import 'package:dicionario/Service/termo_service.dart';
 import 'package:dicionario/shared/color.dart';
-import 'package:dicionario/view/Add_widget.dart';
-import 'package:dicionario/view/Favorite_widget.dart';
 import 'package:dicionario/view/Home_widget.dart';
 import 'package:dicionario/view/Termo_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class PageHome extends StatefulWidget {
   const PageHome({super.key});
@@ -19,10 +19,10 @@ class _PageHomeState extends State<PageHome> {
 
   // Chaves para gerenciar a pilha de navegação de cada aba individualmente (Estilo Instagram)
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
-    GlobalKey<NavigatorState>(), // Home
-    GlobalKey<NavigatorState>(), // Termos / Explorar
-    GlobalKey<NavigatorState>(), // Criar (Add)
-    GlobalKey<NavigatorState>(), // Favoritos
+    GlobalKey<NavigatorState>(), // 0: Home
+    GlobalKey<NavigatorState>(), // 1: Termos / Explorar
+    GlobalKey<NavigatorState>(), // 2: Chat
+    GlobalKey<NavigatorState>(), // 3: Perfil
   ];
 
   @override
@@ -30,7 +30,6 @@ class _PageHomeState extends State<PageHome> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        // Chamada direta à classe estática
         TermoService.listarTermos();
       }
     });
@@ -58,10 +57,10 @@ class _PageHomeState extends State<PageHome> {
         child = const TermoWidget();
         break;
       case 2:
-        child = const AddWidget();
+        child = const ChatHomeScreen();
         break;
       case 3:
-        child = const FavorictWidget();
+        child = const ProfilePage();
         break;
       default:
         child = const HomeWidget();
@@ -80,18 +79,14 @@ class _PageHomeState extends State<PageHome> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return WillPopScope(
       onWillPop: () async {
-        // Permite voltar nas telas internas da aba ativa antes de sair do app
         final isFirstRouteInCurrentTab = !await _navigatorKeys[_currentIndex]
             .currentState!
             .maybePop();
 
         if (isFirstRouteInCurrentTab) {
           if (_currentIndex != 0) {
-            // Se estiver em outra aba, volta para a Home (índice 0) em vez de fechar o app
             setState(() {
               _currentIndex = 0;
             });
@@ -101,6 +96,7 @@ class _PageHomeState extends State<PageHome> {
         return isFirstRouteInCurrentTab;
       },
       child: Scaffold(
+        backgroundColor: techBackground,
         body: Stack(
           children: [
             _buildOffstageNavigator(0),
@@ -109,32 +105,10 @@ class _PageHomeState extends State<PageHome> {
             _buildOffstageNavigator(3),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        // Aqui entra a barra customizada com a paleta tech
+        bottomNavigationBar: CustomBottomNavBar(
           currentIndex: _currentIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: theme.scaffoldBackgroundColor,
-          selectedItemColor: theme.primaryColor,
-          unselectedItemColor: iconInAtivoDark,
-          showUnselectedLabels: true,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Explorar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_box_outlined),
-              label: 'Criar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-            ),
-          ],
+          onTabSelected: _onItemTapped,
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dicionario/shared/color.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -12,40 +13,43 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: onTabSelected,
-      backgroundColor: theme.scaffoldBackgroundColor,
-      elevation: 2,
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.auto_stories_outlined),
-          selectedIcon: Icon(Icons.auto_stories),
-          label: 'Feed',
+    return Container(
+      decoration: const BoxDecoration(
+        color: techSurface,
+        border: Border(
+          top: BorderSide(color: techBorderColor, width: 1),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.category_outlined),
-          selectedIcon: Icon(Icons.category),
-          label: 'Tópicos',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.bookmark_border_rounded),
-          selectedIcon: Icon(Icons.bookmark_rounded),
-          label: 'Favoritos',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: 'Chat',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Perfil',
-        ),
-      ],
+      ),
+      child: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: onTabSelected,
+        backgroundColor: Colors.transparent,
+        indicatorColor: techPrimary.withOpacity(0.2), // Brilho neon suave ao selecionar
+        elevation: 0,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_filled, color: techTextGray),
+            selectedIcon: Icon(Icons.home_filled, color: techPrimary),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search, color: techTextGray),
+            selectedIcon: Icon(Icons.search, color: techPrimary),
+            label: 'Explorar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline, color: techTextGray),
+            selectedIcon: Icon(Icons.chat_bubble, color: techPrimary),
+            label: 'Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline, color: techTextGray),
+            selectedIcon: Icon(Icons.person, color: techPrimary),
+            label: 'Perfil',
+          ),
+        ],
+      ),
     );
   }
 }
