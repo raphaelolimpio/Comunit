@@ -1,248 +1,141 @@
-import 'package:dicionario/Config/model/Post_model.dart';
-import 'package:dicionario/DS/Components/Button/ButtonAdd/Floating_Add_Button.dart';
-import 'package:dicionario/DS/Components/Button/ButtonNavigation/Button_navigation_bar.dart';
-import 'package:dicionario/DS/Components/Button/ButtonNavigation/Button_navigation_bar_view_model.dart';
-import 'package:dicionario/DS/Components/Button/ReturnButton/Return_Button.dart';
-import 'package:dicionario/DS/Components/appBar/Custom_appBar.dart';
-import 'package:dicionario/DS/Components/appBarSearch/App_Bar_Search.dart';
-import 'package:dicionario/DS/Components/theme/themeToggleButton/Theme_Toggle_Button.dart';
-import 'package:dicionario/Service/favorite_service.dart';
 import 'package:dicionario/Service/termo_service.dart';
-import 'package:dicionario/Service/topico_sevice.dart';
 import 'package:dicionario/shared/color.dart';
 import 'package:dicionario/view/Add_widget.dart';
-import 'package:dicionario/view/Detail_widget.dart';
 import 'package:dicionario/view/Favorite_widget.dart';
 import 'package:dicionario/view/Home_widget.dart';
 import 'package:dicionario/view/Termo_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-enum AppView { home, termo, favorites, add, detail }
-
 class PageHome extends StatefulWidget {
   const PageHome({super.key});
+
   @override
-  State<StatefulWidget> createState() => _PageHomeState();
+  State<PageHome> createState() => _PageHomeState();
 }
 
 class _PageHomeState extends State<PageHome> {
-  AppView _currentView = AppView.home;
-  AppView _previousView = AppView.home;
-  PostModel? _selectedTermo;
-  String _searchTerm = "";
-  bool _isSearchExpanded = false;
+  int _currentIndex = 0;
 
-  final List<ButtonNavigationBarViewModel> _bottomNavItems = [
-    ButtonNavigationBarViewModel(name: "Home", icon: Icons.home),
-    ButtonNavigationBarViewModel(name: 'Termos', icon: Icons.book),
-    ButtonNavigationBarViewModel(name: 'Favoritos', icon: Icons.favorite),
+  // Chaves para gerenciar a pilha de navegação de cada aba individualmente (Estilo Instagram)
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(), // Home
+    GlobalKey<NavigatorState>(), // Termos / Explorar
+    GlobalKey<NavigatorState>(), // Criar (Add)
+    GlobalKey<NavigatorState>(), // Favoritos
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      if (index == 0) {
-        _currentView = AppView.home;
-      } else if (index == 1) {
-        _currentView = AppView.termo;
-      } else {
-        _currentView = AppView.favorites;
-      }
-      _previousView = _currentView;
-      _selectedTermo = null;
-      _searchTerm = "";
-      if (_currentView == AppView.home) {
-        context.read<FavoriteService>().applyFilters(nome: "");
-      }
-      _isSearchExpanded = false;
-    });
-  }
-
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<TermoService>().initialLoad();
-      }
-    });
-  }
-
-  void _showTermoDetail(PostModel termo) {
-    setState(() {
-      _previousView = _currentView;
-      _currentView = AppView.detail;
-      _selectedTermo = termo;
-    });
-  }
-
-  void _showFavorites() {
-    setState(() {
-      _previousView = _currentView;
-      _currentView = AppView.favorites;
-      _selectedTermo = null;
-    });
-  }
-
-  void _goBack() {
-    setState(() {
-      _currentView = _previousView;
-      _selectedTermo = null;
-      _searchTerm = "";
-      _isSearchExpanded = false;
-    });
-  }
-
-  Future<List<PostModel>> _getSuggestions(String query) async {
-    if (query.isEmpty) return [];
-    if (_currentView == AppView.termo) {
-      final response = await TopicoSevice.getTopicos(nome: query);
-      return response.data ?? [];
-    } else if (_currentView == AppView.favorites) {
-      final favoriteService = context.read<FavoriteService>();
-      final normaLizedQuery = query.toLowerCase().trim();
-      return favoriteService.favorites
-          .where(
-            (post) => (post.nome ?? "").toLowerCase().contains(normaLizedQuery),
-          )
-          .toList();
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      // Alterado de initialLoad() para listarTermos()
+      context.read<TermoService>().listarTermos();
     }
-    return [];
-  }
+  });
+}
 
-  void _onSwarchSubmitted(String query) {
-    setState(() {
-      _searchTerm = query;
-    });
-    if (_currentView == AppView.favorites) {
-      context.read<FavoriteService>().applyFilters(nome: query);
+  // Comportamento estilo Instagram: Se tocar na aba atual, volta para a raiz da pilha
+  void _onItemTapped(int index) {
+    if (_currentIndex == index) {
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
     }
   }
 
-  void _onSearchCleared() {
-    setState(() {
-      _searchTerm = "";
-    });
-    if (_currentView == AppView.favorites) {
-      context.read<FavoriteService>().applyFilters(nome: "");
+  // Constrói o navegador isolado para cada aba
+  Widget _buildOffstageNavigator(int index) {
+    Widget child;
+    switch (index) {
+      case 0:
+        child = const HomeWidget();
+        break;
+      case 1:
+        child = const TermoWidget();
+        break;
+      case 2:
+        child = const AddWidget();
+        break;
+      case 3:
+        child = const FavorictWidget();
+        break;
+      default:
+        child = const HomeWidget();
     }
-  }
 
-  Widget _buildBody() {
-    switch (_currentView) {
-      case AppView.home:
-        return HomeWidget(onTermoSelected: _showTermoDetail);
-      case AppView.detail:
-        return DetalWidget(termo: _selectedTermo!);
-      case AppView.add:
-        return const AddWidget();
-      case AppView.favorites:
-        return FavorictWidget(onTermoSelected: _showTermoDetail);
-      case AppView.termo:
-        return TermoWidget(
-          onTermoSelected: _showTermoDetail,
-          searchTerm: _searchTerm,
-        );
-    }
-  }
-
-  Widget? _buildFloatingButton() {
-    if (_currentView == AppView.detail || _currentView == AppView.add) {
-      return ReturnButton(
-        onReturn: _goBack,
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: WhiteIconColor,
-      );
-    }
-    return FloatingAddButton(
-      onPressed: () {
-        setState(() {
-          _selectedTermo = null;
-          _previousView = _currentView;
-          _currentView = AppView.add;
-        });
-      },
-      icon: const Icon(Icons.add),
-      backgroundColor: Theme.of(context).primaryColor,
-      foregroundColor: WhiteIconColor,
-      tooltip: "Criar",
+    return Offstage(
+      offstage: _currentIndex != index,
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (settings) {
+          return MaterialPageRoute(
+            builder: (context) => child,
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    int _selectedIndex;
-    bool _isFaroritePage = _currentView == AppView.favorites;
+    final theme = Theme.of(context);
 
-    if (_currentView == AppView.home) {
-      _selectedIndex = 0;
-    } else if (_currentView == AppView.termo) {
-      _selectedIndex = 1;
-    } else if (_currentView == AppView.favorites) {
-      _selectedIndex = 2;
-    } else {
-      if (_previousView == AppView.home) {
-        _selectedIndex = 1;
-      } else if (_previousView == AppView.favorites) {
-        _selectedIndex = 2;
-      } else {
-        _selectedIndex = 0;
-      }
-    }
-    bool showSearch =
-        _currentView == AppView.termo || _currentView == AppView.favorites;
+    return WillPopScope(
+      onWillPop: () async {
+        // Permite voltar nas telas internas da aba ativa antes de sair do app
+        final isFirstRouteInCurrentTab =
+            !await _navigatorKeys[_currentIndex].currentState!.maybePop();
 
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: WillPopScope(
-        onWillPop: () async {
-          if (_currentView == AppView.detail || _currentView == AppView.add) {
-            _goBack();
+        if (isFirstRouteInCurrentTab) {
+          if (_currentIndex != 0) {
+            // Se estiver em outra aba, volta para a Home (índice 0) em vez de fechar o app
+            setState(() {
+              _currentIndex = 0;
+            });
             return false;
           }
-          return true;
-        },
-        child: Scaffold(
-          appBar: CustomAppBar(
-            onShowFavorites: _showFavorites,
-            isFaroritePage: _isFaroritePage,
-            titleWidget: const ThemeToggleButton(),
-            isSearchExpanded: _isSearchExpanded,
-            searchWidget: showSearch
-                ? AppBarSearch(
-                    initialValue: _searchTerm,
-                    onSuggestionSearch: _getSuggestions,
-                    onSuggestionSelected: _showTermoDetail,
-                    onSearchSubmitted: _onSwarchSubmitted,
-                    onSearchCleared: _onSearchCleared,
-                    onExpansionChanged: (isExpanded) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _isSearchExpanded = isExpanded;
-                          });
-                        }
-                      });
-                    },
-                  )
-                : null,
-          ),
-          body: _buildBody(),
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: _buildFloatingButton(),
-          ),
-          floatingActionButtonLocation: FloatingAddButton.defaultLocation,
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: ButtonNavigationBar(
-              items: _bottomNavItems,
-              selectedIndex: _selectedIndex,
-              onItemSelected: _onItemTapped,
+        }
+        return isFirstRouteInCurrentTab;
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _buildOffstageNavigator(0),
+            _buildOffstageNavigator(1),
+            _buildOffstageNavigator(2),
+            _buildOffstageNavigator(3),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: theme.scaffoldBackgroundColor,
+          selectedItemColor: theme.primaryColor,
+          unselectedItemColor: iconInAtivoDark,
+          showUnselectedLabels: true,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              label: 'Home',
             ),
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Explorar',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add_box_outlined),
+              label: 'Criar',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favoritos',
+            ),
+          ],
         ),
       ),
     );

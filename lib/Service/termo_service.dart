@@ -1,5 +1,4 @@
 import 'package:dicionario/Config/Api/Api.dart';
-
 import '../Config/cache/cache_termos/cache_termos.dart';
 import '../Config/model/Post_model.dart';
 import '../Config/server/Api_service.dart';

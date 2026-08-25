@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class AppBarSearch extends StatefulWidget {
-  final Future<List<PostModel>> Function(String query) onSuggestionSearch;
-  final void Function(PostModel suggestion) onSuggestionSelected;
+  final Future<List<TermoCompletoModel>> Function(String query) onSuggestionSearch;
+  final void Function(TermoCompletoModel suggestion) onSuggestionSelected;
   final void Function(String query) onSearchSubmitted;
   final VoidCallback onSearchCleared;
   final String initialValue;
@@ -49,6 +49,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
       setState(() {
         _isExpanded = false;
       });
+      widget.onExpansionChanged?.call(false);
     }
   }
 
@@ -68,8 +69,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (!_isExpanded) {
-      return 
-      IconButton(
+      return IconButton(
         icon: Icon(Icons.search, color: theme.primaryColorDark),
         iconSize: 25,
         onPressed: () {
@@ -83,7 +83,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(right: 8.0, left: 16.0),
-        child: TypeAheadField<PostModel>(
+        child: TypeAheadField<TermoCompletoModel>(
           controller: _controller,
           focusNode: _focusNode,
           builder: (context, controller, focusNode) {
@@ -124,8 +124,8 @@ class _AppBarSearchState extends State<AppBarSearch> {
           suggestionsCallback: widget.onSuggestionSearch,
           itemBuilder: (context, suggestion) {
             return ListTile(
-              title: Text(suggestion.nome ?? ''),
-              subtitle: Text(suggestion.topico),
+              title: Text(suggestion.titulo),
+              subtitle: Text(suggestion.categoria),
             );
           },
           onSelected: (suggestion) {

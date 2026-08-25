@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:dicionario/Config/model/Post_model.dart';
-import 'package:dicionario/Service/topico_sevice.dart';
+import 'package:dicionario/Service/termo_service.dart'; // Ajustado para TermoService correto
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class Seachview extends StatefulWidget {
-  final void Function(PostModel suggestion) onSuggestionSelected;
+  final void Function(TermoCompletoModel suggestion) onSuggestionSelected;
   final void Function(String query) onSearchSubmitted;
   final VoidCallback onSearchCleared;
   final String initialValue;
@@ -24,7 +24,6 @@ class Seachview extends StatefulWidget {
 
 class _SearchViewState extends State<Seachview> {
   final TextEditingController _controller = TextEditingController();
-
   Timer? _debounceTimer;
 
   @override
@@ -39,12 +38,9 @@ class _SearchViewState extends State<Seachview> {
     FocusScope.of(context).unfocus();
   }
 
-  void _onTextChanged(){
-    setState(() {
-      
-    });
+  void _onTextChanged() {
+    setState(() {});
   }
-
 
   @override
   void dispose() {
@@ -54,29 +50,25 @@ class _SearchViewState extends State<Seachview> {
     super.dispose();
   }
 
-  Future<List<PostModel>> _fetchSuggestions(String query) async {
+  Future<List<TermoCompletoModel>> _fetchSuggestions(String query) async {
     _debounceTimer?.cancel();
-    final completer = Completer<List<PostModel>>();
+    final completer = Completer<List<TermoCompletoModel>>();
+    
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
       if (query.isEmpty) {
         completer.complete([]);
         return;
       }
       try {
-        final response = await TopicoSevice.getTopicos(nome: query);
-        if (response.statusCode >= 200 &&
-            response.statusCode < 300 &&
-            response.data != null) {
-          completer.complete(response.data!);
-        } else {
-          print("Erro ao Buscar Sugestões: ${response.statusCode}");
-          completer.complete([]);
-        }
+        // Usando o TermoService correto para buscar termos por string de busca
+        final resultados = await TermoService.listarTermos(busca: query);
+        completer.complete(resultados);
       } catch (e) {
         print("Exceção ao buscar sugestão: $e");
-        completer.completeError(e);
+        completer.complete([]);
       }
     });
+    
     return completer.future;
   }
 
@@ -88,10 +80,9 @@ class _SearchViewState extends State<Seachview> {
       child: Row(
         children: [
           Expanded(
-            child: TypeAheadField<PostModel>(
+            child: TypeAheadField<TermoCompletoModel>(
               controller: _controller,
               builder: (context, controller, focusNode) {
-
                 return TextField(
                   controller: controller,
                   focusNode: focusNode,
@@ -99,14 +90,14 @@ class _SearchViewState extends State<Seachview> {
                     labelText: "Buscar Termo",
                     hintText: "Digite o nome do Termo...",
                     prefixIcon: Icon(Icons.search, color: theme.primaryColorDark),
-                    border:  OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: theme.primaryColorDark, width: 2.0),
                     ),
                     suffixIcon: controller.text.isNotEmpty
                         ? IconButton(
                             icon: Icon(Icons.clear, color: theme.primaryColorDark),
-                            tooltip: "limpar busca",
+                            tooltip: "Limpar busca",
                             onPressed: () {
                               controller.clear();
                               widget.onSearchCleared();
@@ -121,8 +112,8 @@ class _SearchViewState extends State<Seachview> {
               suggestionsCallback: _fetchSuggestions,
               itemBuilder: (context, suggestion) {
                 return ListTile(
-                  title: Text(suggestion.nome ?? "Sem Nome"),
-                  subtitle: Text(suggestion.topico),
+                  title: Text(suggestion.titulo),
+                  subtitle: Text(suggestion.categoria),
                 );
               },
               onSelected: (suggestion) {
@@ -132,14 +123,10 @@ class _SearchViewState extends State<Seachview> {
                 widget.onSuggestionSelected(suggestion);
               },
               emptyBuilder: (context) {
-                final currentFocusNode = FocusScope.of(context).focusedChild;
-                final hasFocus = currentFocusNode != null  && currentFocusNode == FocusScope.of(context).focusedChild;
-                return hasFocus && _controller.text.isNotEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Text("Nenhuma sugestão encontrada."),
-                      )
-                    : const SizedBox.shrink();
+                return const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text("Nenhum termo encontrado."),
+                );
               },
             ),
           ),

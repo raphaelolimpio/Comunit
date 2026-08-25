@@ -1,7 +1,7 @@
 import 'package:dicionario/Config/model/Post_model.dart';
 import 'package:dicionario/DS/Components/Card/BaseCard/Card_enum.dart';
 import 'package:dicionario/DS/Components/Card/ListCard/List_card_custom.dart';
-import 'package:dicionario/DS/Components/Card/model/card_custom/Card_custom_view_model.dart';
+import 'package:dicionario/DS/Components/Card/model/Dicionary_term_Card/dictionary_term_card.dart';
 import 'package:dicionario/DS/Components/Icons/Icon_view_Model.dart';
 import 'package:dicionario/Service/termo_service.dart';
 import 'package:flutter/material.dart';

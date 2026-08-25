@@ -1,8 +1,6 @@
 import 'package:dicionario/Config/cache/cache_topicos/Topico_Cache.dart';
 import 'package:dicionario/Config/model/Post_model.dart';
 import 'package:dicionario/Config/server/Api_service.dart';
-import 'package:dicionario/DS/Components/Card/model/Card_custom4/Card_custm4_view_model.dart';
-import 'package:dicionario/DS/Components/Card/model/Card_custom4/Card_custom4.dart';
 import 'package:dicionario/DS/Components/Icons/Icon_view_Model.dart';
 import 'package:dicionario/Service/Creat_service.dart';
 import 'package:dicionario/Service/topico_sevice.dart';

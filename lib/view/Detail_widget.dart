@@ -1,7 +1,8 @@
+import 'package:dicionario/DS/Components/bash/code_block_widget.dart';
 import 'package:flutter/material.dart';
 import '../Config/model/Post_model.dart';
-import '../Config/server/Api_service.dart';
-import '../DS/Components/bash/Code_Block.dart';
+import '../Service/termo_service.dart';
+
 
 class DetailWidget extends StatefulWidget {
   final int termoId;
@@ -13,7 +14,7 @@ class DetailWidget extends StatefulWidget {
 
 class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late Future<TermoCompletoModel> _termoFuture;
+  late Future<TermoCompletoModel?> _termoFuture;
 
   @override
   void initState() {
@@ -22,9 +23,15 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
     _carregarDados();
   }
 
-  void _carregarDados() {
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _carregarDados({bool forceRefresh = false}) {
     setState(() {
-      _termoFuture = ApiService.getTermoDetalhes(widget.termoId);
+      _termoFuture = TermoService.obterDetalhes(widget.termoId, forceRefresh: forceRefresh);
     });
   }
 
@@ -32,7 +39,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Comunidade Dev'),
+        title: const Text('Detalhes do Termo'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -41,14 +48,14 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
           ],
         ),
       ),
-      body: FutureBuilder<TermoCompletoModel>(
+      body: FutureBuilder<TermoCompletoModel?>(
         future: _termoFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erro: ${snapshot.error}'));
+          if (snapshot.hasError || snapshot.data == null) {
+            return Center(child: Text('Erro ao carregar detalhes: ${snapshot.error}'));
           }
 
           final termo = snapshot.data!;
@@ -61,10 +68,16 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                 padding: const EdgeInsets.all(16),
                 children: [
                   Text(termo.titulo, style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 8),
                   Chip(label: Text(termo.categoria)),
                   const SizedBox(height: 16),
                   const Text('Visões e Entendimentos:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
+                  if (termo.explicacoes.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Center(child: Text('Nenhuma explicação cadastrada ainda.')),
+                    ),
                   ...termo.explicacoes.map((exp) => Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: Padding(
@@ -87,8 +100,10 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                               IconButton(
                                 icon: const Icon(Icons.thumb_up_alt_outlined, size: 18),
                                 onPressed: () async {
-                                  await ApiService.likeExplicacao(exp.id);
-                                  _carregarDados();
+                                  bool sucesso = await TermoService.likeExplicacao(exp.id, termo.id);
+                                  if (sucesso) {
+                                    _carregarDados(forceRefresh: true);
+                                  }
                                 },
                               ),
                               Text('${exp.upvotes}'),
@@ -104,6 +119,11 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
               ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  if (termo.snippets.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Center(child: Text('Nenhum snippet cadastrado ainda.')),
+                    ),
                   ...termo.snippets.map((snip) => Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: Padding(
@@ -114,7 +134,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
                           Text(snip.titulo, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           Text('Por: ${snip.autorNome}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                           const SizedBox(height: 8),
-                          CodeBlockCustom(code: snip.codigo, language: snip.linguagem),
+                          CodeBlockWidget(code: snip.codigo, linguagem: snip.linguagem),
                           const SizedBox(height: 8),
                           Text(snip.explicacao, style: const TextStyle(fontStyle: FontStyle.italic)),
                         ],
@@ -129,7 +149,7 @@ class _DetailWidgetState extends State<DetailWidget> with SingleTickerProviderSt
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Abrir modal de contribuição (adicionar explicação ou snippet)
+          // Aqui você pode abrir um BottomSheet para adicionar nova explicação ou snippet chamando CreateService
         },
         icon: const Icon(Icons.add_comment),
         label: const Text('Contribuir'),
