@@ -26,15 +26,15 @@ class _PageHomeState extends State<PageHome> {
   ];
 
   @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (mounted) {
-      // Alterado de initialLoad() para listarTermos()
-      context.read<TermoService>().listarTermos();
-    }
-  });
-}
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // Chamada direta à classe estática
+        TermoService.listarTermos();
+      }
+    });
+  }
 
   // Comportamento estilo Instagram: Se tocar na aba atual, volta para a raiz da pilha
   void _onItemTapped(int index) {
@@ -72,9 +72,7 @@ void initState() {
       child: Navigator(
         key: _navigatorKeys[index],
         onGenerateRoute: (settings) {
-          return MaterialPageRoute(
-            builder: (context) => child,
-          );
+          return MaterialPageRoute(builder: (context) => child);
         },
       ),
     );
@@ -87,8 +85,9 @@ void initState() {
     return WillPopScope(
       onWillPop: () async {
         // Permite voltar nas telas internas da aba ativa antes de sair do app
-        final isFirstRouteInCurrentTab =
-            !await _navigatorKeys[_currentIndex].currentState!.maybePop();
+        final isFirstRouteInCurrentTab = !await _navigatorKeys[_currentIndex]
+            .currentState!
+            .maybePop();
 
         if (isFirstRouteInCurrentTab) {
           if (_currentIndex != 0) {
