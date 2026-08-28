@@ -22,11 +22,12 @@ class _TermoWidgetState extends State<TermoWidget> {
   void initState() {
     super.initState();
     _topicosFuture = TopicoService.listarTopicos();
+    _termosFiltradosFuture = TermoService.listarTermos(busca: '');
   }
 
   void _buscarTermos(String query) {
     setState(() {
-      _categoriaSelecionada = null;
+      _categoriaSelecionada = null; // Reseta o tópico ao digitar na busca
       _termosFiltradosFuture = TermoService.listarTermos(busca: query);
     });
   }
@@ -34,8 +35,15 @@ class _TermoWidgetState extends State<TermoWidget> {
   void _selecionarTopico(String topico) {
     setState(() {
       _categoriaSelecionada = topico;
+      _searchController.clear(); // Limpa o texto da busca ao selecionar um tópico
       _termosFiltradosFuture = TopicoService.obterTermosPorTopico(topico);
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,7 +69,7 @@ class _TermoWidgetState extends State<TermoWidget> {
               border: InputBorder.none,
               icon: Icon(Icons.search, color: techTextGray),
             ),
-            onSubmitted: _buscarTermos,
+            onChanged: _buscarTermos,
           ),
         ),
       ),
@@ -102,6 +110,7 @@ class _TermoWidgetState extends State<TermoWidget> {
             ),
           ),
           const Divider(height: 1, color: techBorderColor),
+          
           Expanded(
             child: _termosFiltradosFuture == null
                 ? const Center(
@@ -114,10 +123,28 @@ class _TermoWidgetState extends State<TermoWidget> {
                     future: _termosFiltradosFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: techPrimary));
+                        const centerLoading = Center(child: CircularProgressIndicator(color: techPrimary));
+                        return centerLoading;
                       }
+                      
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Erro ao carregar dados: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+                        );
+                      }
+
                       final termos = snapshot.data ?? [];
-                      return ListCard(items: termos, displayMode: CardDisplayMode.verticalList);
+                      
+                      if (termos.isEmpty) {
+                        return const Center(
+                          child: Text('Nenhum resultado encontrado.', style: TextStyle(color: techTextGray)),
+                        );
+                      }
+
+                      return ListCard(
+                        items: termos, 
+                        displayMode: CardDisplayMode.verticalList,
+                      );
                     },
                   ),
           ),

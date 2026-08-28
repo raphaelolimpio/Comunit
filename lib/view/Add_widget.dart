@@ -1,54 +1,85 @@
-import 'package:dicionario/DS/Layout/app_layout_config.dart';
 import 'package:flutter/material.dart';
-import '../Service/Creat_service.dart';
-import '../Service/Validation_service.dart';
-import '../shared/color.dart';
+import '../shared/color.dart'; // Certifique-se de que o caminho do import está correto para o seu projeto
 
-class AddWidget extends StatefulWidget {
-  const AddWidget({super.key});
+class AddWidgetForm extends StatefulWidget {
+  const AddWidgetForm({Key? key}) : super(key: key);
 
   @override
-  State<AddWidget> createState() => _AddWidgetState();
+  State<AddWidgetForm> createState() => _AddWidgetFormState();
 }
 
-class _AddWidgetState extends State<AddWidget> {
+class _AddWidgetFormState extends State<AddWidgetForm> {
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _tituloController = TextEditingController();
-  final TextEditingController _linguagemController = TextEditingController(text: 'dart');
+  final TextEditingController _conteudoController = TextEditingController();
   final TextEditingController _codigoController = TextEditingController();
-  final TextEditingController _explicacaoController = TextEditingController();
-  
-  bool _isLoading = false;
 
-  Future<void> _salvarSnippet() async {
-    if (!_formKey.currentState!.validate()) return;
+  bool _adicionarCodigo = false;
+  String? _linguagemSelecionada = 'dart';
 
-    setState(() => _isLoading = true);
+  final List<String> _linguagensDisponiveis = [
+    'dart',
+    'javascript',
+    'python',
+    'flutter',
+    'json',
+    'html/css',
+    'sql'
+  ];
 
-    final sucesso = await CreateService.criarSnippet(
-      titulo: _tituloController.text.trim(),
-      linguagem: _linguagemController.text.trim(),
-      codigo: _codigoController.text.trim(),
-      explicacao: _explicacaoController.text.trim(),
-    );
+  @override
+  void dispose() {
+    _tituloController.dispose();
+    _conteudoController.dispose();
+    _codigoController.dispose();
+    super.dispose();
+  }
 
-    setState(() => _isLoading = false);
+  void _salvarFormulario() {
+    if (_formKey.currentState!.validate()) {
+      // Pegando os dados preenchidos
+      final titulo = _tituloController.text;
+      final conteudo = _conteudoController.text;
+      final codigo = _adicionarCodigo ? _codigoController.text : null;
+      final linguagem = _adicionarCodigo ? _linguagemSelecionada : null;
 
-    if (mounted) {
-      if (sucesso) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Snippet criado com sucesso!')),
-        );
-        _formKey.currentState!.reset();
-        _tituloController.clear();
-        _codigoController.clear();
-        _explicacaoController.clear();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao criar snippet. Tente novamente.')),
-        );
+      debugPrint('Título: $titulo');
+      debugPrint('Conteúdo: $conteudo');
+      if (_adicionarCodigo) {
+        debugPrint('Linguagem: $linguagem');
+        debugPrint('Código: $codigo');
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Formulário validado com sucesso!')),
+      );
     }
+  }
+
+  // Estilo reutilizável para os InputDecoration no padrão Tech
+  InputDecoration _techInputDecoration({required String labelText, String? hintText}) {
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: const TextStyle(color: techTextGray),
+      hintText: hintText,
+      hintStyle: const TextStyle(color: techTextGray),
+      filled: true,
+      fillColor: techBackground,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: techBorderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: techBorderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: techPrimary),
+      ),
+      alignLabelWithHint: true,
+    );
   }
 
   @override
@@ -58,8 +89,11 @@ class _AddWidgetState extends State<AddWidget> {
       appBar: AppBar(
         backgroundColor: techSurface,
         elevation: 0,
+        title: const Text(
+          'Adicionar Novo Widget / Post',
+          style: TextStyle(color: techTextWhite, fontSize: 18),
+        ),
         iconTheme: const IconThemeData(color: techTextWhite),
-        title: const Text('Criar Publicação', style: TextStyle(fontWeight: FontWeight.bold, color: techTextWhite)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -67,66 +101,128 @@ class _AddWidgetState extends State<AddWidget> {
           key: _formKey,
           child: ListView(
             children: [
+              // Campo de Título
               TextFormField(
                 controller: _tituloController,
                 style: const TextStyle(color: techTextWhite),
-                decoration: const InputDecoration(
-                  labelText: 'Título do Snippet',
-                  labelStyle: TextStyle(color: techTextGray),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
-                ),
-                validator: ValidationService.validarTitulo,
+                decoration: _techInputDecoration(labelText: 'Título'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira o título.';
+                  }
+                  return null;
+                },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
               TextFormField(
-                controller: _linguagemController,
+                controller: _conteudoController,
                 style: const TextStyle(color: techTextWhite),
-                decoration: const InputDecoration(
-                  labelText: 'Linguagem (ex: dart, python, js)',
-                  labelStyle: TextStyle(color: techTextGray),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _explicacaoController,
-                style: const TextStyle(color: techTextWhite),
-                decoration: const InputDecoration(
-                  labelText: 'Explicação curta',
-                  labelStyle: TextStyle(color: techTextGray),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
-                ),
-                maxLines: 2,
-                validator: ValidationService.validarConteudo,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _codigoController,
-                style: const TextStyle(fontFamily: 'monospace', color: techTextWhite),
-                decoration: const InputDecoration(
-                  labelText: 'Código-fonte',
-                  labelStyle: TextStyle(color: techTextGray),
-                  alignLabelWithHint: true,
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: techBorderColor)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: techPrimary)),
-                ),
-                maxLines: 6,
-                validator: ValidationService.validarCodigo,
+                maxLines: 4,
+                decoration: _techInputDecoration(labelText: 'Conteúdo / Descrição'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira o conteúdo.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: techPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: AppLayoutConfig.borderRadius),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+
+              Card(
+                color: techSurface,
+                elevation: 0,
+                margin: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: techBorderColor),
                 ),
-                onPressed: _isLoading ? null : _salvarSnippet,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: techBackground)
-                    : const Text('Publicar Snippet', style: TextStyle(color: techBackground, fontWeight: FontWeight.bold)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SwitchListTile(
+                        title: const Text(
+                          'Adicionar Bloco de Código',
+                          style: TextStyle(color: techTextWhite, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: const Text(
+                          'Ative para incluir trechos de programação.',
+                          style: TextStyle(color: techTextGray, fontSize: 12),
+                        ),
+                        value: _adicionarCodigo,
+                        activeColor: techPrimary,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _adicionarCodigo = value;
+                          });
+                        },
+                      ),
+                      
+                      if (_adicionarCodigo) ...[
+                        const Divider(height: 24, color: techBorderColor),
+                        
+                        DropdownButtonFormField<String>(
+                          value: _linguagemSelecionada,
+                          dropdownColor: techSurface,
+                          style: const TextStyle(color: techTextWhite),
+                          decoration: _techInputDecoration(labelText: 'Linguagem'),
+                          items: _linguagensDisponiveis.map((String lang) {
+                            return DropdownMenuItem<String>(
+                              value: lang,
+                              child: Text(
+                                lang.toUpperCase(),
+                                style: const TextStyle(color: techTextWhite),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? novaLinguagem) {
+                            setState(() {
+                              _linguagemSelecionada = novaLinguagem;
+                            });
+                          },
+                        ),
+                        
+                        const SizedBox(height: 16),
+
+                        TextFormField(
+                          controller: _codigoController,
+                          maxLines: 6,
+                          style: const TextStyle(color: Colors.greenAccent, fontFamily: 'monospace'),
+                          decoration: _techInputDecoration(
+                            labelText: 'Código-fonte',
+                            hintText: 'Cole seu código aqui...',
+                          ),
+                          validator: (value) {
+                            if (_adicionarCodigo && (value == null || value.isEmpty)) {
+                              return 'O campo de código não pode estar vazio se a opção estiver ativa.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _salvarFormulario,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: techPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Salvar Publicação',
+                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ),

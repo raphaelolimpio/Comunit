@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dicionario/DS/page/Page.dart';
+import 'package:dicionario/DS/page/auth_screen.dart';
 import 'package:dicionario/shared/color.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 7), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const PageHome()),
+          MaterialPageRoute(builder: (context) => const AuthScreen()),
         );
       }
     });

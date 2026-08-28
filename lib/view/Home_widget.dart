@@ -54,7 +54,7 @@ class _HomeWidgetState extends State<HomeWidget> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AddWidget()),
+              MaterialPageRoute(builder: (context) =>  AddWidgetForm()),
             );
           },
         ),

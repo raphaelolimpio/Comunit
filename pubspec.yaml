@@ -51,6 +51,10 @@ dependencies:
   web_socket_channel: ^3.0.3
   google_sign_in: ^7.2.0
   shared_preferences_typed: ^1.1.1
+  qr_flutter: ^4.1.0
+
+  agora_rtc_engine: 6.5.3
+  permission_handler: ^13.0.1 
 
 dev_dependencies:
   flutter_test:

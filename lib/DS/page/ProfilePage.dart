@@ -1,3 +1,7 @@
+import 'package:dicionario/DS/Components/qrProfile/qr_profile.dart';
+import 'package:dicionario/DS/page/Edit_Profile_Screen.dart';
+import 'package:dicionario/DS/page/Settings_Screen.dart';
+import 'package:dicionario/view/Add_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dicionario/shared/color.dart';
 
@@ -16,19 +20,29 @@ class ProfilePage extends StatelessWidget {
           leading: IconButton(
             icon: const Icon(Icons.add_box_outlined, color: techTextWhite),
             onPressed: () {
-              // Ação do Botão Criar no topo
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddWidgetForm()),
+              );
             },
           ),
           title: const Text(
             'raphael_olimpo',
-            style: TextStyle(color: techTextWhite, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: techTextWhite,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           centerTitle: true,
           actions: [
             IconButton(
               icon: const Icon(Icons.menu, color: techTextWhite),
               onPressed: () {
-                // showTechSettingsModal(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                );
               },
             ),
           ],
@@ -47,7 +61,9 @@ class ProfilePage extends StatelessWidget {
                           const CircleAvatar(
                             radius: 40,
                             backgroundColor: techPrimary,
-                            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=12'),
+                            backgroundImage: NetworkImage(
+                              'https://i.pravatar.cc/150?img=12',
+                            ),
                           ),
                           Expanded(
                             child: Row(
@@ -65,12 +81,20 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(height: 12),
                       const Text(
                         'Raphael Olimpo',
-                        style: TextStyle(color: techTextWhite, fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(
+                          color: techTextWhite,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       const Text(
                         '💻 Software Developer\n🚀 Flutter & Dart Enthusiast\n⚡ Build. Break. Fix. Repeat.',
-                        style: TextStyle(color: techTextGray, fontSize: 13, height: 1.4),
+                        style: TextStyle(
+                          color: techTextGray,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -80,10 +104,23 @@ class ProfilePage extends StatelessWidget {
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: techBorderColor),
                                 backgroundColor: techSurface,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              onPressed: () {},
-                              child: const Text('Editar Perfil', style: TextStyle(color: techTextWhite)),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditProfileScreen(initialName: ''),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Editar Perfil',
+                                style: TextStyle(color: techTextWhite),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -92,10 +129,30 @@ class ProfilePage extends StatelessWidget {
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: techBorderColor),
                                 backgroundColor: techSurface,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              onPressed: () {},
-                              child: const Text('Compartilhar Perfil', style: TextStyle(color: techTextWhite)),
+                              onPressed: () {
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.qr_code,
+                                    color: techTextWhite,
+                                  ),
+                                  onPressed: () {
+                                    mostrarQrCodePerfil(
+                                      context,
+                                      perfilUrl:
+                                          'https://dicionariotech.app/user/maria_silva',
+                                      nomeUsuario: 'Maria Silva',
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Text(
+                                'Compartilhar Perfil',
+                                style: TextStyle(color: techTextWhite),
+                              ),
                             ),
                           ),
                         ],
@@ -121,10 +178,7 @@ class ProfilePage extends StatelessWidget {
             ];
           },
           body: TabBarView(
-            children: [
-              _buildPostGrid(),
-              _buildPostGrid(isFavoriteGrid: true),
-            ],
+            children: [_buildPostGrid(), _buildPostGrid(isFavoriteGrid: true)],
           ),
         ),
       ),
@@ -168,13 +222,14 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           count,
-          style: const TextStyle(color: techTextWhite, fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: techTextWhite,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(color: techTextGray, fontSize: 12),
-        ),
+        Text(label, style: const TextStyle(color: techTextGray, fontSize: 12)),
       ],
     );
   }
@@ -191,11 +246,12 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: techBackground,
-      child: _tabBar,
-    );
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: techBackground, child: _tabBar);
   }
 
   // CORREÇÃO 2: Implementação obrigatória do shouldRebuild
