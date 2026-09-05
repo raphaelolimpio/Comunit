@@ -1,3 +1,4 @@
+import 'package:dicionario/DS/Components/Card/model/githubStatsCard/Github_Stats_Card.dart';
 import 'package:dicionario/DS/Components/qrProfile/qr_profile.dart';
 import 'package:dicionario/DS/page/Edit_Profile_Screen.dart';
 import 'package:dicionario/DS/page/Settings_Screen.dart';
@@ -95,6 +96,22 @@ class ProfilePage extends StatelessWidget {
                           fontSize: 13,
                           height: 1.4,
                         ),
+                      ),
+                       GithubProfileCard(
+                        username: 'raphael_olimpo',
+                        totalCommits: 358,
+                        publicRepos: 1,
+                        starredRepos: 13,
+                        pulledRequests: 0,
+                        techBadges: [
+                          {'name': 'Dart', 'color': Color(0xFF0075AA)},
+                          {'name': 'Flutter', 'color': Color(0xFF02569B)},
+                          {'name': 'JavaScript', 'color': Color(0xFFF7DF1E)},
+                          {'name': 'Node.js', 'color': Color(0xFF339933)},
+                          {'name': 'Python', 'color': Color(0xFF3776AB)},
+                          {'name': 'Docker', 'color': Color(0xFF2496ED)},
+                          {'name': 'Git', 'color': Color(0xFFF05032)},
+                        ],
                       ),
                       const SizedBox(height: 16),
                       Row(
